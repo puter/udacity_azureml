@@ -1,4 +1,4 @@
-# Optimizing an ML Pipeline in Azure
+# Optimizing an ML Pipeline in Azure - Chad Puterbaugh
 
 ## Overview
 This project is part of the Udacity Azure ML Nanodegree.
