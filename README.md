@@ -22,7 +22,7 @@ ps = RandomParameterSampling(
     {'C': uniform(0.001, 4.0), # Uniform distribution to apply various penalties to regularization
     'max_iter': choice([1000, 1500, 2000, 2500, 5000])}
 )
-The paramater sampler is a configuration setting provided to the hyperdrive instance which cycles through a variety of parameters. In each run, the config provides a method for hyperdrive to select a new set of parameters, and hyperdrive then has logging instruction for various model outputs that we are interested in understanding. In each run, the parameter is logged as well as the output. From there it is a matter of selecting which is the output variable we are interested in maximizing, and hyperdrive then selects the optimal set of paramaters that achieved this result from the run at its disposal. 
+The paramater sampler is a configuration setting provided to the hyperdrive instance which cycles through a variety of parameters. In each run, the config provides a method for hyperdrive to select a new set of parameters, and hyperdrive then has logging instruction for various model outputs that we are interested in understanding. In each run, the parameter is logged as well as the output. From there it is a matter of selecting which is the output variable we are interested in maximizing, and hyperdrive then selects the optimal set of paramaters that achieved this result from the run at its disposal. I chose a random parameter sampler. This tends to gain the benefits of supplying breadth of inputs to hyperdrive without having to spend many runs iterating over a full grid of parameters. 
 https://docs.microsoft.com/en-us/azure/machine-learning/how-to-tune-hyperparameters#define-the-search-space
 
 **What are the benefits of the early stopping policy you chose?**
