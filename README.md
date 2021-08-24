@@ -14,7 +14,42 @@ Using hyperdrive, the best performing model was a logistic regression model with
 
 ## Scikit-learn Pipeline
 **Explain the pipeline architecture, including data, hyperparameter tuning, and classification algorithm.**
-The pipeline archecture was to create and register a tabular dataset from a url. That dataset was then converted into a pandas dataframe. The dataframe was then cleaned and prepared for training using one-hot encoding, converting categorical string values into booleans, and time-based values into integers (e.g. months into mapped month of the year). The data cleanup also split the `y` feature (the tag) from the remaining `x` dataframe representing predictors for the regression. The resulting `x` and `y` dataframes were split into test and training groups using `train_test_split`. The training `x` and `y` dataframes were used to fit a logistic regression binary classifier, and the test `x` and `y` dataframes were used for validation. The hyperparamaters for the logistic regression training were fed dynamically using hyperdrive in successive runs. Each run was scored for its classification accuracy, and the highest accuracy results were saved off into the outputs folder. 
+The pipeline archecture starts with a call to register a tabular dataset. The data is retrieved using `TabularDatasetFactory.from_delimited_files()` which is made available through `azureml.core`. The dataset can be found at https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv . The dataset was then converted into a pandas dataframe. The dataset itself consists of 32950 observations of 21 features. Each observation represents the marketing data and result of the marketing campaign for each person recorded. The features include:
+
+Attribute Information:
+
+Input variables:
+# bank client data:
+  1 - age (numeric)
+  2 - job : type of job (categorical: 'admin.','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed','unknown')
+  3 - marital : marital status (categorical: 'divorced','married','single','unknown'; note: 'divorced' means divorced or widowed)
+  4 - education (categorical: 'basic.4y','basic.6y','basic.9y','high.school','illiterate','professional.course','university.degree','unknown')
+  5 - default: has credit in default? (categorical: 'no','yes','unknown')
+  6 - housing: has housing loan? (categorical: 'no','yes','unknown')
+  7 - loan: has personal loan? (categorical: 'no','yes','unknown')
+# related with the last contact of the current campaign:
+  8 - contact: contact communication type (categorical: 'cellular','telephone')
+  9 - month: last contact month of year (categorical: 'jan', 'feb', 'mar', ..., 'nov', 'dec')
+  10 - day_of_week: last contact day of the week (categorical: 'mon','tue','wed','thu','fri')
+  11 - duration: last contact duration, in seconds (numeric). Important note: this attribute highly affects the output target (e.g., if duration=0 then y='no'). Yet, the duration is not known before a call is performed. Also, after the end of the call y is obviously known. Thus, this input should only be included for benchmark purposes and should be discarded if the intention is to have a realistic predictive model.
+# other attributes:
+  12 - campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)
+  13 - pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric; 999 means client was not previously contacted)
+  14 - previous: number of contacts performed before this campaign and for this client (numeric)
+  15 - poutcome: outcome of the previous marketing campaign (categorical: 'failure','nonexistent','success')
+# social and economic context attributes
+  16 - emp.var.rate: employment variation rate - quarterly indicator (numeric)
+  17 - cons.price.idx: consumer price index - monthly indicator (numeric)
+  18 - cons.conf.idx: consumer confidence index - monthly indicator (numeric)
+  19 - euribor3m: euribor 3 month rate - daily indicator (numeric)
+  20 - nr.employed: number of employees - quarterly indicator (numeric)
+
+# Output variable (desired target):
+  21 - y - has the client subscribed a term deposit? (binary: 'yes','no')
+
+https://archive.ics.uci.edu/ml/datasets/bank+marketing
+
+The dataframe was then cleaned and prepared for training. The job feature was dropped entirely. `marital`, `default`, `housing`, `loan`, `poutcome` and `y` were all simplified and converted in place with a boolean 1 or 0 so that the logistic regression could handle the data mathematically. `married` was converted to 1, all others 0. For each of the others, a 'yes' was converted to a 1, and all other responses 0. Contact and dummies were 1-hot encoded using the `get_dummies` method. This method converts each categorical response into its own column, and essentially pivots the data in place using assigning a 1 if that category was true for the row, 0 if not. Similarly, this is done so the values can be mathematically used for inputs. Lastly, and time-based values were converted into integers for the same reason (e.g. months into mapped month of the year). The data cleanup also split the `y` feature (the tag) from the remaining `x` dataframe representing predictors for the regression. The resulting `x` and `y` dataframes were split into test and training groups using `train_test_split`. The training `x` and `y` dataframes were used to fit a logistic regression binary classifier, and the test `x` and `y` dataframes were used for validation. The hyperparamaters for the logistic regression training were fed dynamically using hyperdrive in successive runs. Each run was scored for its classification accuracy, and the highest accuracy results were saved off into the outputs folder. 
 
 **What are the benefits of the parameter sampler you chose?**
 The paramater sampler is a configuration setting provided to the hyperdrive instance which cycles through a variety of hyperparameters. In each run, the config provides a method for hyperdrive to select a new set of hyperparameters, and hyperdrive then has logging instruction for various model outputs that we are interested in understanding. In each run, the parameter is logged as well as the output. From there it is a matter of selecting which is the output variable we are interested in maximizing, and hyperdrive then selects the optimal set of paramaters that achieved this result from the run at its disposal. 
